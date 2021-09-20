@@ -23,10 +23,21 @@ class MainHandler(BaseHandler):
         rL = links['body'].decode('utf-8')
 
         ndf = pd.read_csv(StringIO(rN), sep=",")
-        ldf = pd.read_csv(StringIO(rL), sep=",")
+        ldf = pd.read_csv(StringIO(rL), sep=",", header=None)
+
+        cols = [str(x + 1) for x in range(len(ldf.index))]
+        ldf.columns = cols
 
         dag_nodes = [{'id': x + 1, 'label': x + 1} for x in range(len(ldf.index))]
-        dag_links = [{'id': x + 1, 'label': x + 1} for x in range(len(ldf.index))]
+        dag_links = []
+
+        for index, row in ldf.iterrows():
+            for name, val in row.iteritems():
+                if val == 1:
+                    dag_links.append({
+                        'id': f"a{str((index + 1))}{name}",
+                        'source': str(index + 1),
+                        'target': name})
 
         await self.finish({"dag": {'nodes': dag_nodes,
                                    'links': dag_links}})

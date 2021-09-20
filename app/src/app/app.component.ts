@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {combineLatest, Observable} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { Edge, Node } from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-root',
@@ -10,12 +11,12 @@ import {HttpClient} from '@angular/common/http';
 export class AppComponent {
   title = 'app';
   // tslint:disable-next-line:variable-name
-  data;
+  nodes = new Array<Node>();
+  links = new Array<Edge>();
   constructor(private http: HttpClient) {
     this.getData().subscribe(data => {
-      debugger
-      this.data = data.dag;
-      console.log(this.data);
+      this.nodes = data.dag.nodes;
+      this.links = data.dag.links;
     });
   }
 
@@ -43,6 +44,8 @@ export class AppComponent {
   getData(): Observable<any> {
     const endpoint = 'http://localhost:9999/api/main';
     // @ts-ignore
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+
     return this.http
       .get(endpoint);
   }
