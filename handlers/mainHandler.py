@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from io import StringIO
+
 from handlers.baseHandler import BaseHandler
 
 
@@ -24,8 +25,11 @@ class MainHandler(BaseHandler):
         ndf = pd.read_csv(StringIO(rN), sep=",")
         ldf = pd.read_csv(StringIO(rL), sep=",")
 
+        dag_nodes = [{'id': x + 1, 'label': x + 1} for x in range(len(ldf.index))]
+        dag_links = [{'id': x + 1, 'label': x + 1} for x in range(len(ldf.index))]
 
-        await self.write(json.dumps({"message": "Hello Tornados"}))
+        await self.finish({"dag": {'nodes': dag_nodes,
+                                   'links': dag_links}})
 
 
 class UploadHandler(BaseHandler):
