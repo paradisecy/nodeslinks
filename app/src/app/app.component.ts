@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {combineLatest, Observable} from 'rxjs';
+import {combineLatest, concat, Observable, Subject} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { Edge, Node } from '@swimlane/ngx-graph';
 
@@ -13,19 +13,26 @@ export class AppComponent {
   // tslint:disable-next-line:variable-name
   nodes = new Array<Node>();
   links = new Array<Edge>();
+  update$: Subject<any> = new Subject();
+
   constructor(private http: HttpClient) {
     this.getData().subscribe(data => {
-      this.nodes = data.dag.nodes;
-      this.links = data.dag.links;
+
+
+     this.nodes = new Array<Node>();
+     this.links =  new Array<Edge>();
+
+     this.nodes = data.nodes;
+     this.links = data.links;
     });
   }
 
   handleFileInput(files: FileList, mode) {
     const file: any = files.item(0);
 
-    combineLatest(this.postFile(file, mode), this.getData())
-      .subscribe(([p, g]) => {
-      console.log(p, g);
+    concat(this.postFile(file, mode), this.getData())
+      .subscribe(d => {
+        this.updateChart();
     });
 
   }
@@ -44,11 +51,13 @@ export class AppComponent {
   getData(): Observable<any> {
     const endpoint = 'http://localhost:9999/api/main';
     // @ts-ignore
-    const headers = new HttpHeaders().set('Content-Type', 'application/json');
-
     return this.http
       .get(endpoint);
   }
+
+  updateChart() {
+    this.update$.next(true);
+}
 
 
 }
