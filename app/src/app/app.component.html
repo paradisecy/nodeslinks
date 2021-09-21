@@ -79,7 +79,9 @@
               (change)="handleFileInput($event.target.files,'links')">
     </span>
 
-<ngx-graph
+    <div *ngIf="links.length > 0 && nodes.length > 0">
+
+      <ngx-graph
   class="chart-container"
   [view]="[1600, 800]"
   [showMiniMap]="true"
@@ -119,6 +121,43 @@
           </svg:g>
         </ng-template>
 </ngx-graph>
+      <dx-gantt
+    taskListWidth="500"
+    scaleType="weeks"
+    height="700">
+
+    <dxo-tasks [dataSource]="tasks"></dxo-tasks>
+    <dxo-dependencies [dataSource]="dependencies"></dxo-dependencies>
+
+
+    <dxi-column dataField="title" caption="Subject" [width]="300"></dxi-column>
+    <dxi-column dataField="start" caption="Start Date" dataType="date"></dxi-column>
+    <dxi-column dataField="end" caption="End Date" dataType="date"></dxi-column>
+
+    <dxo-toolbar>
+        <dxi-item name="undo"></dxi-item>
+        <dxi-item name="redo"></dxi-item>
+        <dxi-item name="separator"></dxi-item>
+        <dxi-item name="collapseAll"></dxi-item>
+        <dxi-item name="expandAll"></dxi-item>
+        <dxi-item name="separator"></dxi-item>
+        <dxi-item name="addTask"></dxi-item>
+        <dxi-item name="deleteTask"></dxi-item>
+        <dxi-item name="separator"></dxi-item>
+        <dxi-item name="zoomIn"></dxi-item>
+        <dxi-item name="zoomOut"></dxi-item>
+    </dxo-toolbar>
+
+    <dxo-validation [autoUpdateParentTasks]="true"></dxo-validation>
+    <dxo-editing [enabled]="true"></dxo-editing>
+</dx-gantt>
+    </div>
+
+
+
+
+
+
 
   </div>
 

@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
-import {combineLatest, concat, Observable, Subject} from 'rxjs';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { Edge, Node } from '@swimlane/ngx-graph';
+import {concat, Observable, Subject} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
+import {Edge, Node} from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-root',
@@ -14,31 +14,40 @@ export class AppComponent {
   nodes = new Array<Node>();
   links = new Array<Edge>();
   update$: Subject<any> = new Subject();
+  tasks = [];
+  dependencies = [];
+  baseUrl = 'http://localhost:9999';
 
   constructor(private http: HttpClient) {
     this.getData().subscribe(data => {
-
-
-     this.nodes = new Array<Node>();
-     this.links =  new Array<Edge>();
-
-     this.nodes = data.nodes;
-     this.links = data.links;
+      this.collectionAssigment(data);
     });
+  }
+
+  collectionAssigment(data) {
+    this.nodes = new Array<Node>();
+    this.links = new Array<Edge>();
+    this.tasks = data.tasks;
+    this.dependencies = data.dep;
+    this.nodes = data.nodes;
+    this.links = data.links;
   }
 
   handleFileInput(files: FileList, mode) {
     const file: any = files.item(0);
 
     concat(this.postFile(file, mode), this.getData())
-      .subscribe(d => {
-        this.updateChart();
-    });
+      .subscribe(data => {
+        if (data.dep !== undefined) {
+          this.collectionAssigment(data);
+          this.updateChart();
+        }
+      });
 
   }
 
   postFile(fileToUpload: File, mode): Observable<boolean> {
-    const endpoint = 'http://localhost:9999/api/upload';
+    const endpoint = `${this.baseUrl}/api/upload`;
     const formData: FormData = new FormData();
     formData.append('fileUp', fileToUpload, fileToUpload.name);
     const blob = new Blob();
@@ -49,7 +58,7 @@ export class AppComponent {
   }
 
   getData(): Observable<any> {
-    const endpoint = 'http://localhost:9999/api/main';
+    const endpoint = `${this.baseUrl}/api/main`;
     // @ts-ignore
     return this.http
       .get(endpoint);
@@ -57,7 +66,5 @@ export class AppComponent {
 
   updateChart() {
     this.update$.next(true);
-}
-
-
+  }
 }

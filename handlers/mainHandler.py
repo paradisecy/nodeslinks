@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import pandas as pd
 from io import StringIO
@@ -9,8 +10,8 @@ class MainHandler(BaseHandler):
     async def get(self):
         db = self.settings['db']
         data = await db['cache'].find_one()
-        ret = data['dag'] if data else {'nodes': [], 'links': []}
-        await self.finish(json.dumps(ret))
+        ret = data['dag'] if data else {'nodes': [], 'links': [], 'tasks': [], 'dep': []}
+        await self.finish(json.dumps(ret, indent=4, sort_keys=True, default=str))
 
 
 class UploadHandler(BaseHandler):
@@ -48,6 +49,14 @@ class UploadHandler(BaseHandler):
             dag_nodes = [{'id': x + 1, 'label': x + 1} for x in range(len(ldf.index))]
             dag_links = []
 
+            tasks = [{'id': x['NodeId'], 'title': x['NodeId'], 'parentId': 0, 'progress': 0,
+                      'start': datetime.strptime(x['StartDate'], '%d/%m/%Y'),
+                      'end': datetime.strptime(x['EndDate'], '%d/%m/%Y')} for _, x in ndf.T.iteritems()]
+
+            tasks = pd.DataFrame(tasks).sort_values(by="start").to_dict(orient='records')
+
+            deps = []
+
             for index, row in ldf.iterrows():
                 for name, val in row.iteritems():
                     if val == 1:
@@ -55,9 +64,18 @@ class UploadHandler(BaseHandler):
                             'id': f"a{str((index + 1))}{name}",
                             'source': str(index + 1),
                             'target': name})
+                        deps.append({
+                                'id': f"a{str((index + 1))}{name}",
+                                'predecessorId': str(index + 1),
+                                'successorId': name,
+                                'type': 0
+                            })
 
             await db.drop_collection('cache')
             await db['cache'].insert_one({"dag": {'nodes': dag_nodes,
-                                                  'links': dag_links}})
+                                                  'links': dag_links,
+                                                  'tasks': tasks,
+                                                  'dep': deps
+                                                  }})
 
         await self.finish({"return": "ok"})

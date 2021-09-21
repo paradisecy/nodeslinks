@@ -5,16 +5,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import {HttpClientModule} from '@angular/common/http';
 import {NgxGraphModule} from '@swimlane/ngx-graph';
+import {DxGanttModule} from 'devextreme-angular';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    NgxGraphModule
+    NgxGraphModule,
+    DxGanttModule
   ],
   providers: [],
   bootstrap: [AppComponent]
